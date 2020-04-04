@@ -1,21 +1,25 @@
 #include "keyboard.h"
 
-Keyboard::Keyboard(const std::vector<int> &iRowPins, const std::vector<int> &iColPins)
+namespace keyboard
+{
+Keyboard::Keyboard(int *iRowPins, int iRowsLength, int *iColPins, int iColsLength)
 {
     _rowPins = iRowPins;
     _colPins = iColPins;
+    _rowsLength = iRowsLength;
+    _colsLength = iColsLength;
 }
 
 void Keyboard::init()
 {
-    for (int aPin : _rowPins)
+    for (int i = 0; i < _rowsLength; ++i)
     {
-        pinMode(aPin, OUTPUT);
+        pinMode(_rowPins[i], OUTPUT);
     }
 
-    for (int aPin : _colPins)
+    for (int i = 0; i < _colsLength; ++i)
     {
-        pinMode(aPin, INPUT_PULLUP);
+        pinMode(_colPins[i], INPUT_PULLUP);
     }
 }
 
@@ -24,52 +28,54 @@ void Keyboard::setDebounce(const int iValue)
     _debounce = iValue;
 }
 
-void Keyboard::debounce() const
+void Keyboard::doDebounce() const
 {
     delay(_debounce);
 }
 
-int Keyboard::cerca_tasto_premuto() const
+int Keyboard::getKeyPressed() const
 {
     int aKey = -1;
 
-    for (int aRow : _rowPins)
+    for (int aRowIndex = 0; aRowIndex < _rowsLength; ++aRowIndex)
     {
-        leggi_riga(aRow);
+        readRow(_rowPins[aRowIndex]);
 
-        for (int aCol : _colPins)
+        for (int aColIndex = 0; aColIndex < _colsLength; ++aColIndex)
         {
-            if (leggi_colonna(aCol))
+            if (readColumn(_colPins[aColIndex]))
             {
-                aKey = (aRow - _rowPins.at(0)) + 5 * (aCol - _colPins.at(0));
+                aKey = (_rowPins[aRowIndex] - _rowPins[0]) + 5 * (_colPins[aColIndex] - _colPins[0]);
             }
         }
     }
     return aKey;
 }
 
-void Keyboard::leggi_riga(const int &iIndex) const
+void Keyboard::readRow(const int &iRowPin) const
 {
-    for (int aPin : _rowPins)
+    for (int i = 0; i < _rowsLength; ++i)
     {
-        digitalWrite(aPin, HIGH);
+        digitalWrite(_rowPins[i], HIGH);
     }
-    digitalWrite(iIndex, LOW);
+
+    digitalWrite(iRowPin, LOW);
 }
 
-bool Keyboard::leggi_colonna(const int &iIndex) const
+bool Keyboard::readColumn(const int &iColPin) const
 {
-    return digitalRead(iIndex) == 0 ? true : false;
+    return digitalRead(iColPin) == 0 ? true : false;
 }
 
-String Keyboard::converti_tasto(const int &iTasto) const
+String Keyboard::converti_tasto(const int &iTastoIndex) const
 {
     String aValue = "NO_TASTO";
 
-    if (_keysMap.count(iTasto) == 1)
+    if (iTastoIndex >= 0 && iTastoIndex < _keysLength)
     {
-        aValue = _keysMap[iTasto];
+        aValue = _keysMap[iTastoIndex];
     }
 
     return aValue;
 }
+} // namespace keyboard

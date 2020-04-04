@@ -1,41 +1,93 @@
 #ifndef UNIT_TEST
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
-#include <ArduinoSTL.h>
-#include <map>
 #include <keyboard.h>
-LiquidCrystal_I2C lcd = LiquidCrystal_I2C(0x27, 16, 2); // Change to (0x27,16,2) for 16x2 LCD.
+#include <menu.h>
+#include <callbacks.h>
+#include <fsm.h>
+#include <resource-manager.h>
+#include <MemoryFree.h>
+#include <debug.h>
 
-const std::vector<int> _rowsPin = {2, 3, 4, 5, 6};
-const std::vector<int> _colPin = {8, 9, 10, 11};
+int _keyboardRowsPin[] = {2, 3, 4, 5, 6};
+int _keyboardColsPin[] = {8, 9, 10, 11};
+int _keyboardRowsPinLength = sizeof(_keyboardRowsPin) / sizeof(int);
+int _keyboardColsPinLength = sizeof(_keyboardColsPin) / sizeof(int);
 
-Keyboard _keyboard = Keyboard(_rowsPin, _colPin);
+LiquidCrystal_I2C _lcd = LiquidCrystal_I2C(0x27, 16, 2); // Change to (0x27,16,2) for 16x2 LCD.
+
+menu::MenuItem _menuItems[] = {{"Temperatura", callbacks::showTemperatureSetup}, {"Durata", callbacks::showDurationSetup}, {"Setup", callbacks::doSetup}};
+
+keyboard::Keyboard _keyboard = keyboard::Keyboard(_keyboardRowsPin, _keyboardRowsPinLength, _keyboardColsPin, _keyboardColsPinLength);
+
+menu::Menu _menu = menu::Menu(&_lcd, _menuItems, (sizeof(_menuItems) / sizeof(_menuItems[0])));
+
+fsm::Fsm _fsm;
+resource::Manager _resourcesManager;
+
+int _temperature = 85;
+int _duration = 5;
+
+resource::Resource _resourceMenu = {resource::TYPE::MENU, &_menu};
+resource::Resource _resourceKeyboard = {resource::TYPE::KEYBOARD, &_keyboard};
+resource::Resource _resourceLcd = {resource::TYPE::LCD, &_lcd};
+resource::Resource _resourceFsm = {resource::TYPE::FSM, &_fsm};
+resource::Resource _resourceTemperature = {resource::TYPE::TEMPERATURE, &_temperature};
+resource::Resource _resourceDuration = {resource::TYPE::DURATION, &_duration};
+
+resource::Resource *_resources[] = {&_resourceMenu, &_resourceKeyboard, &_resourceLcd, &_resourceFsm, &_resourceTemperature, &_resourceDuration};
+
+fsm::Event _mappingKeyEvent[20] = {fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::ENTER, fsm::Event::BACK, fsm::Event::DOWN, fsm::Event::UP, fsm::Event::NO_EVENT};
 
 void setup()
 {
+  Serial.begin(9600);
+  LOG_INFO("Initialization..");
+
+  for (resource::Resource *aResource : _resources)
+  {
+    _resourcesManager.addResource(aResource);
+  }
+
+  _fsm.setResourceManger(&_resourcesManager);
+  _menu.setResourceManger(&_resourcesManager);
+
+  _fsm.addTransition({fsm::State::INIT, fsm::State::MENU, fsm::Event::BEGIN, callbacks::showMenu});
+  _fsm.addTransition({fsm::State::MENU, fsm::State::MENU, fsm::Event::UP, callbacks::moveUP});
+  _fsm.addTransition({fsm::State::MENU, fsm::State::MENU, fsm::Event::DOWN, callbacks::moveDOWN});
+  _fsm.addTransition({fsm::State::MENU, fsm::State::SETTINGS, fsm::Event::ENTER, callbacks::moveIN});
+  _fsm.addTransition({fsm::State::TEMPERATURE, fsm::State::MENU, fsm::Event::BACK, callbacks::moveBACK});
+  _fsm.addTransition({fsm::State::DURATA, fsm::State::MENU, fsm::Event::BACK, callbacks::moveBACK});
+  _fsm.addTransition({fsm::State::SETUP, fsm::State::MENU, fsm::Event::BACK, callbacks::moveBACK});
+
+  _fsm.addTransition({fsm::State::TEMPERATURE, fsm::State::TEMPERATURE, fsm::Event::UP, callbacks::incrementTemperature});
+  _fsm.addTransition({fsm::State::TEMPERATURE, fsm::State::TEMPERATURE, fsm::Event::DOWN, callbacks::decrementTemperature});
+
+  _fsm.addTransition({fsm::State::DURATA, fsm::State::DURATA, fsm::Event::UP, callbacks::incrementDuration});
+  _fsm.addTransition({fsm::State::DURATA, fsm::State::DURATA, fsm::Event::DOWN, callbacks::decrementDuration});
+
   _keyboard.init();
 
-  lcd.begin();
+  _lcd.begin();
 
-  lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("Hello, world!");
-  Serial.begin(9600);
-  Serial.println("CIAO 1");
+  LOG_INFO_VALUE("Initialization DONE. MemoryFree = ", getFreeMemory());
+
+  _menu.display();
+
+  _fsm.exec(fsm::Event::BEGIN);
 }
 
 void loop()
 {
-  int aTastoPremuto = _keyboard.cerca_tasto_premuto();
+  int aKeyPressed = _keyboard.getKeyPressed();
 
-  if (aTastoPremuto != -1)
+  if (aKeyPressed != -1)
   {
-    String aTasto = _keyboard.converti_tasto(aTastoPremuto);
+    fsm::Event aEvent = _mappingKeyEvent[aKeyPressed];
 
-    Serial.print(aTastoPremuto);
-    Serial.print("  -  ");
-    Serial.println(aTasto);
-    _keyboard.debounce();
+    _fsm.exec(aEvent);
+
+    _keyboard.doDebounce();
   }
 }
-#endif
+#endif 

@@ -1,33 +1,23 @@
-#ifdef UNIT_TEST
-
 #include <unity.h>
-#include <keyboard.h>
-#include <ArduinoSTL.h>
 
-void test1()
+
+void test_setup(void)
 {
-    std::vector<int> aRowPins = {2, 3, 4, 5};
-    std::vector<int> aColPins = {7, 8, 9, 10, 11};
-    Keyboard aKeyboard = Keyboard(aRowPins, aColPins);
-    aKeyboard.init();
-
-    int aKey = aKeyboard.cerca_tasto_premuto();
-    TEST_ASSERT_EQUAL(-1, aKey);
-    digitalWrite(2, LOW);
-    digitalWrite(3, HIGH);
-
-    digitalWrite(8, LOW);
-    aKey = aKeyboard.cerca_tasto_premuto();
-    TEST_ASSERT_EQUAL(0, aKey);
 }
+
+void test_loop(void)
+{
+}
+
 
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
 
-    RUN_TEST(test1);
+    RUN_TEST(test_setup);
+    RUN_TEST(test_loop);
 
     UNITY_END();
-}
 
-#endif
+    return 0;
+}
