@@ -7,9 +7,8 @@
 
 namespace callbacks
 {
-void showTemperatureSetup(void *iResourceManager);
-void showDurationSetup(void *iResourceManager);
-void doSetup(void *iResourceManager);
+void showReady(void *iResourceManager);
+
 void moveUP(void *iResourceManager);
 void moveDOWN(void *iResourceManager);
 void moveIN(void *iResourceManager);

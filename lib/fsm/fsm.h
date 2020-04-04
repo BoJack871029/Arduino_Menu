@@ -5,6 +5,11 @@
 #include <Arduino.h>
 #endif
 
+#define DEFINE_TRANSITION(FSM, FROM, TO, EVENT, FUNCTION) \
+    {                                                      \
+        FSM.addTransition({FROM, TO, EVENT, FUNCTION});   \
+    }
+
 namespace fsm
 {
 enum State
@@ -14,7 +19,8 @@ enum State
     SETTINGS,
     DURATA,
     TEMPERATURE,
-    SETUP
+    SETUP,
+    READY
 };
 
 enum Event
@@ -24,7 +30,8 @@ enum Event
     DOWN,
     ENTER,
     BACK,
-    NO_EVENT
+    NO_EVENT,
+    OPEN_MENU
 };
 
 struct Transition
