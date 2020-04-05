@@ -1,3 +1,5 @@
+#ifndef UNIT_TEST
+
 #ifndef __CALLBACKS_H
 #define __CALLBACKS_H
 
@@ -23,4 +25,5 @@ void decrementDuration(void *iResourceManager);
 
 } // namespace callbacks
 
+#endif
 #endif

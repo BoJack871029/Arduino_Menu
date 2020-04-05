@@ -1,10 +1,11 @@
+
 #ifndef __MENU_H
 #define __MENU_H
-
 #ifndef UNIT_TEST
 #include <Arduino.h>
+#else
+#include "arduino-desktop.h"
 #endif
-
 class LiquidCrystal_I2C;
 
 namespace menu
@@ -29,17 +30,25 @@ public:
 
     Menu(LiquidCrystal_I2C *iLcd, MenuItem *iItems, size_t iItemsLength);
 
-    void display() const;
+    virtual void setDisplayRows(int iRows);
 
-    void moveUp();
+    virtual int getPageIndex();
 
-    void moveDown();
+    virtual int getRowIndex();
 
-    void select();
+    virtual bool isItemSelected();
 
-    void moveBack();
+    virtual void display() const;
 
-    void setResourceManger(void *iResourceManager);
+    virtual void moveUp();
+
+    virtual void moveDown();
+
+    virtual void select();
+
+    virtual void moveBack();
+
+    virtual void setResourceManger(void *iResourceManager);
 
 private:
     int _displayRows = 2;

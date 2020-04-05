@@ -1,5 +1,10 @@
 #include <fsm.h>
+#ifndef UNIT_TEST
 #include <Arduino.h>
+#else
+#include <fake-lcd.h>
+#include <iostream>
+#endif
 
 void fsm::Fsm::setResourceManger(void *iResourceManager)
 {
@@ -11,9 +16,13 @@ void fsm::Fsm::setCurrentState(fsm::State iState)
     _currentState = iState;
 }
 
+fsm::State fsm::Fsm::getCurrentState()
+{
+    return _currentState;
+}
+
 void fsm::Fsm::addTransition(Transition iTransition)
 {
-
     _states = (Transition *)realloc(_states, (_statesLength + 1) * sizeof(Transition));
     _states[_statesLength] = iTransition;
     _statesLength++;

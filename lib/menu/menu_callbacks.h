@@ -1,3 +1,5 @@
+#ifndef UNIT_TEST
+
 #ifndef __MENU_CALLBACKS_H
 #define __MENU_CALLBACKS_H
 
@@ -12,4 +14,5 @@ void showDurationSetup(void *iResourceManager);
 void doSetup(void *iResourceManager);
 } // namespace menu_callbacks
 
+#endif
 #endif

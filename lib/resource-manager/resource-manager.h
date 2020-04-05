@@ -1,3 +1,5 @@
+#ifndef UNIT_TEST
+
 #ifndef __RESOURCEMANAGER_H
 #define __RESOURCEMANAGER_H
 
@@ -34,4 +36,5 @@ private:
     Resource *_resources[10];
 };
 } // namespace resource
+#endif
 #endif

@@ -1,3 +1,4 @@
+#ifndef UNIT_TEST
 #include "keyboard.h"
 
 namespace keyboard
@@ -79,3 +80,4 @@ String Keyboard::converti_tasto(const int &iTastoIndex) const
     return aValue;
 }
 } // namespace keyboard
+#endif

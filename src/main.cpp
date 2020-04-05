@@ -1,4 +1,5 @@
 #ifndef UNIT_TEST
+
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
 #include <keyboard.h>
@@ -17,7 +18,7 @@ int _keyboardColsPinLength = sizeof(_keyboardColsPin) / sizeof(int);
 
 LiquidCrystal_I2C _lcd = LiquidCrystal_I2C(0x27, 16, 2); // Change to (0x27,16,2) for 16x2 LCD.
 
-menu::MenuItem _menuItems[] = {{"Temperatura", menu_callbacks::showTemperatureSetup}, {"Durata", menu_callbacks::showDurationSetup}, {"Setup", menu_callbacks::doSetup}};
+menu::MenuItem _menuItems[] = {{"Temperatura", menu_callbacks::showTemperatureSetup}, {"Durata", menu_callbacks::showDurationSetup} , {"Setup", menu_callbacks::doSetup}};
 
 keyboard::Keyboard _keyboard = keyboard::Keyboard(_keyboardRowsPin, _keyboardRowsPinLength, _keyboardColsPin, _keyboardColsPinLength);
 

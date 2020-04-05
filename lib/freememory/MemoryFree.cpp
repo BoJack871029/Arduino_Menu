@@ -1,3 +1,4 @@
+#ifndef UNIT_TEST
 #if (ARDUINO >= 100)
 #include <Arduino.h>
 #else
@@ -50,3 +51,4 @@ int getFreeMemory()
     }
     return free_memory;
 }
+#endif

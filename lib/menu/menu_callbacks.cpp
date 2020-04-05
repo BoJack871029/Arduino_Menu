@@ -1,3 +1,5 @@
+#ifndef UNIT_TEST
+
 #include <menu_callbacks.h>
 #include <debug.h>
 #include <resource-manager.h>
@@ -67,3 +69,4 @@ void doSetup(void *iResourceManager)
     }
 }
 } // namespace menu_callbacks
+#endif

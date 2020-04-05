@@ -3,10 +3,12 @@
 
 #ifndef UNIT_TEST
 #include <Arduino.h>
+#else
+#include "arduino-desktop.h"
 #endif
 
 #define DEFINE_TRANSITION(FSM, FROM, TO, EVENT, FUNCTION) \
-    {                                                      \
+    {                                                     \
         FSM.addTransition({FROM, TO, EVENT, FUNCTION});   \
     }
 
@@ -50,14 +52,15 @@ struct Transition
 class Fsm
 {
 public:
-    int selectState(const fsm::Event iEvent) const;
     int exec(const fsm::Event iEvent);
     void addTransition(Transition iTransition);
     void setResourceManger(void *iResourceManager);
     void setCurrentState(fsm::State iState);
+    fsm::State getCurrentState();
 
 private:
-    Transition *_states;
+    int selectState(const fsm::Event iEvent) const;
+    Transition *_states = NULL;
     size_t _statesLength = 0;
     fsm::State _currentState = State::INIT;
     void *_resourceManger;

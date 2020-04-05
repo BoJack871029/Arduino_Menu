@@ -1,3 +1,5 @@
+#ifndef UNIT_TEST
+
 #include <callbacks.h>
 #include <LiquidCrystal_I2C.h>
 #include <Arduino.h>
@@ -166,3 +168,4 @@ void showReady(void *iResourceManager)
     }
 }
 } // namespace callbacks
+#endif

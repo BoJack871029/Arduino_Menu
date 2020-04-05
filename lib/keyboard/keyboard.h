@@ -1,3 +1,5 @@
+#ifndef UNIT_TEST
+
 #ifndef __KEYBOARD_H
 #define __KEYBOARD_H
 
@@ -5,8 +7,6 @@
 #include <Arduino.h>
 #endif
 
-#include <map>
-#include <vector>
 namespace keyboard
 {
 enum Keys
@@ -63,4 +63,5 @@ private:
     int _keysLength = 20;
 };
 } // namespace keyboard
+#endif
 #endif

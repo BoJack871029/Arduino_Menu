@@ -1,5 +1,12 @@
 #include "menu.h"
+#include <math.h>
+
+#ifndef UNIT_TEST
 #include <LiquidCrystal_I2C.h>
+#else
+#include <fake-lcd.h>
+#include <iostream>
+#endif
 
 namespace menu
 {
@@ -10,9 +17,28 @@ Menu::Menu(LiquidCrystal_I2C *iLcd, MenuItem *iItems, size_t iItemsLength)
     _itemsLength = iItemsLength;
 }
 
+int Menu::getPageIndex()
+{
+    return _pageIndex;
+}
+int Menu::getRowIndex()
+{
+    return _rowIndex;
+}
+
+bool Menu::isItemSelected()
+{
+    return _isItemSelected;
+}
+
 void Menu::setResourceManger(void *iResourceManager)
 {
     _resourceManager = iResourceManager;
+}
+
+void Menu::setDisplayRows(int iRows)
+{
+    _displayRows = iRows;
 }
 
 void Menu::display() const
@@ -31,7 +57,6 @@ void Menu::display() const
         if (aIndex < _itemsLength)
         {
             const MenuItem aItem = _items[aIndex];
-
             _lcd->setCursor(0, i);
             _lcd->print(aItem._title);
 
@@ -62,13 +87,19 @@ void Menu::moveUp()
 
 void Menu::moveDown()
 {
-    const int aRemainingItems = _itemsLength - (_pageIndex * _displayRows);
-    if (aRemainingItems <= _displayRows)
+    int aCurrentIntemIndex = _rowIndex + (_pageIndex * _displayRows);
+
+    if (aCurrentIntemIndex >= _itemsLength - 1)
     {
         return;
     }
-    _rowIndex++;
-    if (_rowIndex > (_displayRows - 1))
+
+    if (_rowIndex <= _displayRows)
+    {
+        _rowIndex++;
+    }
+
+    if (_rowIndex == _displayRows)
     {
         _rowIndex = 0;
         _pageIndex++;
@@ -92,4 +123,4 @@ void Menu::moveBack()
     _isItemSelected = 0;
 }
 
-}
+} // namespace menu

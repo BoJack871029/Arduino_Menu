@@ -1,3 +1,5 @@
+#ifndef UNIT_TEST
+
 #include <resource-manager.h>
 namespace resource
 {
@@ -5,7 +7,6 @@ void Manager::addResource(Resource *iResource)
 {
     if (_resourceLength > 9)
     {
-        Serial.println("Troppe risorse: Max 10");
         return;
     }
     _resources[_resourceLength] = iResource;
@@ -26,3 +27,4 @@ void *Manager::get(int iType)
     return 0;
 }
 } // namespace resource
+#endif
