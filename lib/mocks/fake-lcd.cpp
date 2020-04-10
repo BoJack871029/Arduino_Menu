@@ -16,4 +16,9 @@ size_t LiquidCrystal_I2C::print(const String &)
 {
     return 0;
 };
+
+size_t LiquidCrystal_I2C::print(const int &)
+{
+    return 0;
+};
 #endif

@@ -33,7 +33,9 @@ enum Event
     ENTER,
     BACK,
     NO_EVENT,
-    OPEN_MENU
+    OPEN_MENU,
+    READ_EEPROM,
+    WRITE_EEPROM
 };
 
 struct Transition
@@ -52,11 +54,11 @@ struct Transition
 class Fsm
 {
 public:
-    int exec(const fsm::Event iEvent);
-    void addTransition(Transition iTransition);
-    void setResourceManger(void *iResourceManager);
-    void setCurrentState(fsm::State iState);
-    fsm::State getCurrentState();
+    virtual int exec(const fsm::Event iEvent);
+    virtual void addTransition(Transition iTransition);
+    virtual void setResourceManger(void *iResourceManager);
+    virtual void setCurrentState(fsm::State iState);
+    virtual fsm::State getCurrentState();
 
 private:
     int selectState(const fsm::Event iEvent) const;

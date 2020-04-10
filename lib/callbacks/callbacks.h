@@ -1,10 +1,10 @@
-#ifndef UNIT_TEST
-
 #ifndef __CALLBACKS_H
 #define __CALLBACKS_H
 
 #ifndef UNIT_TEST
 #include <Arduino.h>
+#else
+#include "arduino-desktop.h"
 #endif
 
 namespace callbacks
@@ -25,5 +25,4 @@ void decrementDuration(void *iResourceManager);
 
 } // namespace callbacks
 
-#endif
 #endif

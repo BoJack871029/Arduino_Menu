@@ -1,4 +1,3 @@
-#ifndef UNIT_TEST
 
 #include <resource-manager.h>
 namespace resource
@@ -14,6 +13,18 @@ void Manager::addResource(Resource *iResource)
     _resourceLength++;
 }
 
+bool Manager::hasResource(resource::TYPE iType)
+{
+    for (int i = 0; i < _resourceLength; ++i)
+    {
+        if (_resources[i]->_type == iType)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void *Manager::get(int iType)
 {
     for (int i = 0; i < _resourceLength; ++i)
@@ -27,4 +38,3 @@ void *Manager::get(int iType)
     return 0;
 }
 } // namespace resource
-#endif

@@ -38,7 +38,7 @@ public:
 
     virtual bool isItemSelected();
 
-    virtual void display() const;
+    virtual void display();
 
     virtual void moveUp();
 

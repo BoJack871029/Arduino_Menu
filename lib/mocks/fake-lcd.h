@@ -10,5 +10,7 @@ public:
     virtual void setCursor(uint8_t, uint8_t);
 
     virtual size_t print(const String &);
+
+    virtual size_t print(const int &);
 };
 #endif

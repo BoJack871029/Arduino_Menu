@@ -41,7 +41,7 @@ void Menu::setDisplayRows(int iRows)
     _displayRows = iRows;
 }
 
-void Menu::display() const
+void Menu::display() 
 {
     if (_isItemSelected != 0)
     {

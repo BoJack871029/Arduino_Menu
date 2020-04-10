@@ -1,13 +1,18 @@
-#ifndef UNIT_TEST
 
-#include <callbacks.h>
-#include <LiquidCrystal_I2C.h>
+#ifndef UNIT_TEST
 #include <Arduino.h>
-#include <resource-manager.h>
 #include <LiquidCrystal_I2C.h>
-#include <menu.h>
 #include <debug.h>
+#include <EEPROM.h>
+#else
+#include <iostream>
+#include <fake-lcd.h>
+#include <fake-eeprom.h>
+#endif
+#include <callbacks.h>
+#include <menu.h>
 #include <fsm.h>
+#include <resource-manager.h>
 
 namespace callbacks
 {
@@ -19,17 +24,21 @@ void incrementDuration(void *iResourceManager)
     {
         resource::Manager *aManager = (resource::Manager *)iResourceManager;
         LiquidCrystal_I2C *aLcd = (LiquidCrystal_I2C *)aManager->get(resource::TYPE::LCD);
+        fsm::Fsm *aFsm = (fsm::Fsm *)aManager->get(resource::TYPE::FSM);
 
         int *aDuration = (int *)aManager->get(resource::TYPE::DURATION);
-
         if ((*aDuration) < 100)
         {
             (*aDuration)++;
             aLcd->setCursor(0, 1);
-            aLcd->print(String(*aDuration) + String(" sec  "));
+            aLcd->print(*aDuration);
+            aLcd->print(" sec ");
+
+            aFsm->exec(fsm::Event::WRITE_EEPROM);
         }
     }
 }
+
 void decrementDuration(void *iResourceManager)
 {
     LOG_INFO("Callback: decrementDuration");
@@ -37,13 +46,17 @@ void decrementDuration(void *iResourceManager)
     {
         resource::Manager *aManager = (resource::Manager *)iResourceManager;
         LiquidCrystal_I2C *aLcd = (LiquidCrystal_I2C *)aManager->get(resource::TYPE::LCD);
+        fsm::Fsm *aFsm = (fsm::Fsm *)aManager->get(resource::TYPE::FSM);
 
         int *aDuration = (int *)aManager->get(resource::TYPE::DURATION);
         if ((*aDuration) > 0)
         {
             (*aDuration)--;
             aLcd->setCursor(0, 1);
-            aLcd->print(String(*aDuration) + String(" sec  "));
+            aLcd->print(*aDuration);
+            aLcd->print(" sec ");
+
+            aFsm->exec(fsm::Event::WRITE_EEPROM);
         }
     }
 }
@@ -55,6 +68,7 @@ void incrementTemperature(void *iResourceManager)
     {
         resource::Manager *aManager = (resource::Manager *)iResourceManager;
         LiquidCrystal_I2C *aLcd = (LiquidCrystal_I2C *)aManager->get(resource::TYPE::LCD);
+        fsm::Fsm *aFsm = (fsm::Fsm *)aManager->get(resource::TYPE::FSM);
 
         int *aTemperatura = (int *)aManager->get(resource::TYPE::TEMPERATURE);
 
@@ -62,7 +76,9 @@ void incrementTemperature(void *iResourceManager)
         {
             (*aTemperatura)++;
             aLcd->setCursor(0, 1);
-            aLcd->print(String(*aTemperatura) + String(" C  "));
+            aLcd->print(*aTemperatura);
+            aLcd->print(" C ");
+            aFsm->exec(fsm::Event::WRITE_EEPROM);
         }
     }
 }
@@ -73,13 +89,17 @@ void decrementTemperature(void *iResourceManager)
     {
         resource::Manager *aManager = (resource::Manager *)iResourceManager;
         LiquidCrystal_I2C *aLcd = (LiquidCrystal_I2C *)aManager->get(resource::TYPE::LCD);
+        fsm::Fsm *aFsm = (fsm::Fsm *)aManager->get(resource::TYPE::FSM);
 
         int *aTemperatura = (int *)aManager->get(resource::TYPE::TEMPERATURE);
         if ((*aTemperatura) > 0)
         {
             (*aTemperatura)--;
             aLcd->setCursor(0, 1);
-            aLcd->print(String(*aTemperatura) + String(" C  "));
+            aLcd->print(*aTemperatura);
+            aLcd->print(" C ");
+
+            aFsm->exec(fsm::Event::WRITE_EEPROM);
         }
     }
 }
@@ -162,10 +182,10 @@ void showReady(void *iResourceManager)
         aLcd->print("Pronto");
 
         aLcd->setCursor(0, 1);
-        String aFormattedTemperature = "T: " + String(*aTemperature);
-        String aFormattedDuration = " D: " + String(*aDuration);
-        aLcd->print(aFormattedTemperature + aFormattedDuration);
+        aLcd->print("T:");
+        aLcd->print(*aTemperature);
+        aLcd->print(" D:");
+        aLcd->print(*aDuration);
     }
 }
 } // namespace callbacks
-#endif

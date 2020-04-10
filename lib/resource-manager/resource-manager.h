@@ -1,5 +1,3 @@
-#ifndef UNIT_TEST
-
 #ifndef __RESOURCEMANAGER_H
 #define __RESOURCEMANAGER_H
 
@@ -16,7 +14,8 @@ enum TYPE
     KEYBOARD,
     FSM,
     TEMPERATURE,
-    DURATION
+    DURATION,
+    EEPROM
 };
 
 struct Resource
@@ -29,6 +28,7 @@ class Manager
 {
 public:
     void addResource(Resource *iResource);
+    bool hasResource(resource::TYPE iType);
     void *get(int iType);
 
 private:
@@ -36,5 +36,4 @@ private:
     Resource *_resources[10];
 };
 } // namespace resource
-#endif
 #endif

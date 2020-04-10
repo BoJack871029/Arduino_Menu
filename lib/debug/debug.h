@@ -27,3 +27,14 @@
         Serial.print(" - ");      \
         Serial.println(message);  \
     }
+
+#define LOG_ERROR_VALUE(message, value) \
+    {                                   \
+        Serial.print("<ERROR> ");       \
+        Serial.print(__FILE__);         \
+        Serial.print(":");              \
+        Serial.print(__LINE__);         \
+        Serial.print(" - ");            \
+        Serial.print(message);          \
+        Serial.println(value);          \
+    }

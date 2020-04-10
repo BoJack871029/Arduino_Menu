@@ -6,10 +6,14 @@
 #include <menu.h>
 #include <menu_callbacks.h>
 #include <callbacks.h>
+#include <callbacks-eeprom.h>
 #include <fsm.h>
 #include <resource-manager.h>
 #include <MemoryFree.h>
 #include <debug.h>
+#include <EEPROM.h>
+
+void checkRequiredResources(resource::Manager *iManager);
 
 int _keyboardRowsPin[] = {2, 3, 4, 5, 6};
 int _keyboardColsPin[] = {8, 9, 10, 11};
@@ -18,7 +22,7 @@ int _keyboardColsPinLength = sizeof(_keyboardColsPin) / sizeof(int);
 
 LiquidCrystal_I2C _lcd = LiquidCrystal_I2C(0x27, 16, 2); // Change to (0x27,16,2) for 16x2 LCD.
 
-menu::MenuItem _menuItems[] = {{"Temperatura", menu_callbacks::showTemperatureSetup}, {"Durata", menu_callbacks::showDurationSetup} , {"Setup", menu_callbacks::doSetup}};
+menu::MenuItem _menuItems[] = {{"Temperatura", menu_callbacks::showTemperatureSetup}, {"Durata", menu_callbacks::showDurationSetup}, {"Setup", menu_callbacks::doSetup}};
 
 keyboard::Keyboard _keyboard = keyboard::Keyboard(_keyboardRowsPin, _keyboardRowsPinLength, _keyboardColsPin, _keyboardColsPinLength);
 
@@ -36,8 +40,9 @@ resource::Resource _resourceLcd = {resource::TYPE::LCD, &_lcd};
 resource::Resource _resourceFsm = {resource::TYPE::FSM, &_fsm};
 resource::Resource _resourceTemperature = {resource::TYPE::TEMPERATURE, &_temperature};
 resource::Resource _resourceDuration = {resource::TYPE::DURATION, &_duration};
+resource::Resource _resourceEeprom = {resource::TYPE::EEPROM, &EEPROM};
 
-resource::Resource *_resources[] = {&_resourceMenu, &_resourceKeyboard, &_resourceLcd, &_resourceFsm, &_resourceTemperature, &_resourceDuration};
+resource::Resource *_resources[] = {&_resourceMenu, &_resourceKeyboard, &_resourceLcd, &_resourceFsm, &_resourceTemperature, &_resourceDuration, &_resourceEeprom};
 
 fsm::Event _mappingKeyEvent[20] = {fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::OPEN_MENU, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::NO_EVENT, fsm::Event::ENTER, fsm::Event::BACK, fsm::Event::DOWN, fsm::Event::UP, fsm::Event::NO_EVENT};
 
@@ -51,8 +56,13 @@ void setup()
     _resourcesManager.addResource(aResource);
   }
 
+  checkRequiredResources(&_resourcesManager);
+
   _fsm.setResourceManger(&_resourcesManager);
   _menu.setResourceManger(&_resourcesManager);
+
+  DEFINE_TRANSITION(_fsm, fsm::State::INIT, fsm::State::INIT, fsm::Event::READ_EEPROM, callbacks::eeprom::readSettingsFromEEPROM);
+
   DEFINE_TRANSITION(_fsm, fsm::State::INIT, fsm::State::READY, fsm::Event::BEGIN, callbacks::showReady);
   DEFINE_TRANSITION(_fsm, fsm::State::READY, fsm::State::MENU, fsm::Event::OPEN_MENU, callbacks::showMenu);
   DEFINE_TRANSITION(_fsm, fsm::State::MENU, fsm::State::MENU, fsm::Event::UP, callbacks::moveUP);
@@ -64,19 +74,22 @@ void setup()
   DEFINE_TRANSITION(_fsm, fsm::State::SETUP, fsm::State::MENU, fsm::Event::BACK, callbacks::moveBACK);
   DEFINE_TRANSITION(_fsm, fsm::State::MENU, fsm::State::READY, fsm::Event::BACK, callbacks::showReady);
 
+  DEFINE_TRANSITION(_fsm, fsm::State::TEMPERATURE, fsm::State::TEMPERATURE, fsm::Event::WRITE_EEPROM, callbacks::eeprom::writeSettingsToEEPROM);
+  DEFINE_TRANSITION(_fsm, fsm::State::DURATA, fsm::State::DURATA, fsm::Event::WRITE_EEPROM, callbacks::eeprom::writeSettingsToEEPROM);
+
   DEFINE_TRANSITION(_fsm, fsm::State::TEMPERATURE, fsm::State::TEMPERATURE, fsm::Event::UP, callbacks::incrementTemperature);
   DEFINE_TRANSITION(_fsm, fsm::State::TEMPERATURE, fsm::State::TEMPERATURE, fsm::Event::DOWN, callbacks::decrementTemperature);
   DEFINE_TRANSITION(_fsm, fsm::State::DURATA, fsm::State::DURATA, fsm::Event::UP, callbacks::incrementDuration);
   DEFINE_TRANSITION(_fsm, fsm::State::DURATA, fsm::State::DURATA, fsm::Event::DOWN, callbacks::decrementDuration);
 
   _keyboard.init();
-
   _lcd.begin();
 
   LOG_INFO_VALUE("Initialization DONE. MemoryFree = ", getFreeMemory());
 
   _menu.display();
 
+  _fsm.exec(fsm::Event::READ_EEPROM);
   _fsm.exec(fsm::Event::BEGIN);
 }
 
@@ -91,6 +104,18 @@ void loop()
     _fsm.exec(aEvent);
 
     _keyboard.doDebounce();
+  }
+}
+
+void checkRequiredResources(resource::Manager *iManager)
+{
+  resource::TYPE aRequiredResources[] = {resource::TYPE::MENU, resource::TYPE::KEYBOARD, resource::TYPE::LCD, resource::TYPE::FSM, resource::TYPE::TEMPERATURE, resource::TYPE::DURATION, resource::TYPE::EEPROM};
+  for (resource::TYPE aType : aRequiredResources)
+  {
+    if (!iManager->hasResource(aType))
+    {
+      LOG_ERROR_VALUE("Missing resource type: ", aType);
+    }
   }
 }
 #endif
