@@ -1,3 +1,6 @@
 
+# Arduino Arduino
+Simple program to run a LCD screen menu
+
 Upload from command line:
 avrdude -v -p atmega328p -C C:\Users\iltat\.platformio\packages\tool-avrdude\avrdude.conf -c arduino -b 115200 -D -P "COM3" -U flash:w:C:\Users\iltat\Code\Arduino\Arduino_Menu\.pio\build\uno\firmware.hex:i
